@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains all the strings used in the plugin.
  * @package   enrol_duitku
  * @copyright 2022 Michael David <mikedh2612@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -23,7 +24,7 @@
 $string['pluginname'] = 'Duitku Payment';
 $string['pluginname_desc'] = 'The Duitku module allows you to set up paid courses.  If the cost for any course is zero, then students are not asked to pay for entry.  There is a site-wide cost that you set here as a default for the whole site and then a course setting that you can set for each course individually. The course cost overrides the site cost.';
 
-$string['apikey'] ='API Key';
+$string['apikey'] = 'API Key';
 $string['apikey_desc'] = 'API Key located in the Project website';
 $string['assignrole'] = 'Assign role';
 $string['call_error'] = 'An error has occured when requesting transaction. Please try again or contact the site admin';
@@ -64,6 +65,7 @@ $string['nocost'] = 'There is no cost associated with enrolling in this course!'
 $string['payment_expirations'] = 'Duitku checks for expired transaction in database';
 $string['payment_not_exist'] = 'Transaction does not exist. Please create a new transaction';
 $string['payment_cancelled'] = 'Transaction cancelled. Please create a new transaction';
+$string['payment_paid'] = 'Transaction paid succesfully. Please wait a moment and refresh the page again.';
 $string['pending_message'] = 'User has not completed payment yet';
 $string['sendpaymentbutton'] = 'Pay via Duitku';
 $string['status'] = 'Allow Duitku enrolments';
@@ -81,28 +83,10 @@ $string['environment:production'] = 'Production';
 $string['environment:sandbox'] = 'Sandbox';
 
 $string['admin_email'] = 'Email to Admin on Enrolment';
-$string['admin_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br />
-Use "$courseShortName" to display the enrolled course short name, <br />
-"$studentUsername" to display enrolled student username, <br />
-"$courseFullName" to display the enrolled course full name, <br />
-"$amount" to get the amount payed during enrolment,
-"$adminUsername" to get the admin username,
-"$teacherName" to get the teacher username. (All without quotation marks).';
+$string['admin_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';
 
 $string['teacher_email'] = 'Email to Teacher on Enrolment';
-$string['teacher_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br />
-Use "$courseShortName" to display the enrolled course short name, <br />
-"$studentUsername" to display enrolled student username, <br />
-"$courseFullName" to display the enrolled course full name, <br />
-"$amount" to get the amount payed during enrolment,
-"$adminUsername" to get the admin username,
-"$teacherName" to get the teacher username. (All without quotation marks).';
+$string['teacher_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';
 
 $string['student_email'] = 'Email to Student on Enrolment';
-$string['student_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br />
-Use "$courseShortName" to display the enrolled course short name, <br />
-"$studentUsername" to display enrolled student username, <br />
-"$courseFullName" to display the enrolled course full name, <br />
-"$amount" to get the amount payed during enrolment,
-"$adminUsername" to get the admin username,
-"$teacherName" to get the teacher username. (All without quotation marks).';
+$string['student_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';

@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * 	Contains the mathematical constants to work with Duitku Plugin.
- * 
+ * Contains the mathematical constants to work with Duitku Plugin.
+ *
  * @package   enrol_duitku
  * @copyright 2022 Michael David <mikedh2612@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,36 +24,40 @@
 
 namespace enrol_duitku;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Stores all of the mathematical constants used in the plugin
+ *
+ * @author  2022 Michael David <mikedh2612@gmail.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class duitku_mathematical_constants {
-	/**
-	 * @var int Multiplier for turning days to minutes
-	 */
-	public const ONE_DAY_IN_HOURS = 24;
+    /**
+     * @var int Multiplier for turning days to minutes
+     */
+    public const ONE_DAY_IN_HOURS = 24;
 
-	/**
-	 * @var int Multiplier for turning hours to minutes
-	 */
-	public const HOUR_IN_MINUTES = 60;
+    /**
+     * @var int Multiplier for turning hours to minutes
+     */
+    public const HOUR_IN_MINUTES = 60;
 
-	/**
-	 * @var int Multiplier for turning minutes to seconds
-	 */
-	public const MINUTE_IN_SECONDS = 60;
+    /**
+     * @var int Multiplier for turning minutes to seconds
+     */
+    public const MINUTE_IN_SECONDS = 60;
 
-	/**
-	 * @var int Multiplier for turning seconds to milliseconds
-	 */
-	public const SECOND_IN_MILLISECONDS = 1000;
+    /**
+     * @var int Multiplier for turning seconds to milliseconds
+     */
+    public const SECOND_IN_MILLISECONDS = 1000;
 
-	/**
-	 * @var int One product
-	 */
-	public const ONE_PRODUCT = 1;
+    /**
+     * @var int One product
+     */
+    public const ONE_PRODUCT = 1;
 
-	/**
-	 * @var int One product
-	 */
-	public const ONE_DAY_IN_SECONDS = 86400;
+    /**
+     * @var int One product
+     */
+    public const ONE_DAY_IN_SECONDS = 86400;
 }

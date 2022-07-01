@@ -1,4 +1,3 @@
-
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -16,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Controls the version for the Duitku enrolment plugin
+ *
  * @package   enrol_duitku
  * @copyright 2022 Michael David <mikedh2612@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,10 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 
 // Reference https://docs.moodle.org/dev/version.php
 
-$plugin->version 	= 2022051800; 
-$plugin->requires 	= 2015111600; 		// Moodle Version 3.0 (could change depending if not supported)
-$plugin->maturity 	= MATURITY_STABLE; 
-$plugin->release 	= '1.0';
-$plugin->component 	= 'enrol_duitku';
-$plugin->cron     	= 60;
-
+$plugin->version    = 2022051800;
+$plugin->requires   = 2020110900; // Moodle Version 3.10 (could change depending if not supported)
+$plugin->maturity   = MATURITY_STABLE;
+$plugin->release    = '1.0';
+$plugin->component  = 'enrol_duitku';
+$plugin->cron       = 60;

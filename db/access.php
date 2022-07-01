@@ -15,11 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
-* Capabilities for duitku enrolment plugin.
-* @package   enrol_duitku
-* @copyright 2022 Michael David <mikedh2612@gmail.com>
-* @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-* */
+ * Capabilities for duitku enrolment plugin.
+ * @package   enrol_duitku
+ * @copyright 2022 Michael David <mikedh2612@gmail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * */
+
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
@@ -55,5 +56,4 @@ $capabilities = [
         'archetypes' => [
         ]
     ],
-
 ];

@@ -26,171 +26,211 @@ use enrol_duitku\duitku_mathematical_constants;
 use enrol_duitku\duitku_helper;
 
 require("../../config.php");
-global $DB;
 
-$timestamp = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS); //in milisecond
+require_login();
+
+$currenttimestamp = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);// In milisecond.
 
 $environment = $_POST['environment'];
-$paymentAmount = (int)$_POST['amount'];
-$merchantOrderId = $_POST['orderId'];
-$customerVaName = $_POST['customerVa'];
-$productDetails = $_POST['item_name'];
+$paymentamount = (int)$_POST['amount'];
+$merchantorderid = $_POST['orderId'];
+$customervaname = $_POST['customerVa'];
+$productdetails = $_POST['item_name'];
 $email = $_POST['email'];
-$callbackUrl = $_POST['notify_url'];
-$returnUrl = $_POST['return'];
-$custom = explode('-', $merchantOrderId);
+$callbackurl = $_POST['notify_url'];
+$returnurl = $_POST['return'];
+$custom = explode('-', $merchantorderid);
 $userid = (int)$custom[1];
 $courseid = (int)$custom[2];
 $instanceid = (int)$custom[3];
 
-//Initiate all data needed to create transaction first
-$merchantCode = get_config('enrol_duitku', 'merchantcode'); 
-$apiKey = get_config('enrol_duitku', 'apikey');
-$expiryPeriod = get_config('enrol_duitku', 'expiry');
+// Initiate all data needed to create transaction first.
+$merchantcode = get_config('enrol_duitku', 'merchantcode');
+$apikey = get_config('enrol_duitku', 'apikey');
+$expiryperiod = get_config('enrol_duitku', 'expiry');
 
 $url = $environment == 'sandbox' ? 'https://api-sandbox.duitku.com/api/merchant/createInvoice' : 'https://api-prod.duitku.com/api/merchant/createInvoice';
-$signature = hash('sha256', $merchantCode.$timestamp.$apiKey);
-$referenceUrl = "{$CFG->wwwroot}/enrol/duitku/reference_check.php?merchantOrderId={$merchantOrderId}&courseid={$courseid}&userid={$USER->id}&instanceid={$instanceid}";
+$signature = hash('sha256', $merchantcode.$currenttimestamp.$apikey);
+$referenceurl = "{$CFG->wwwroot}/enrol/duitku/reference_check.php?merchantOrderId={$merchantorderid}&courseid={$courseid}&userid={$USER->id}&instanceid={$instanceid}";
 
-$phoneNumber = empty($USER->phone1) === true ? "" : $USER->phone1;
-$admin = get_admin(); //Only 1 MAIN admin can exist at a time
-$address = [ 
-	'firstName' => $USER->firstname,
-	'lastName' => $USER->lastname,
-	'address' => $USER->address,
-	'city' => $USER->city,
-	'postalCode' => "",
-	'phone' => $phoneNumber, //There are phone1 and phone2 for users. Main phone goes to phone1.
-	'countryCode' => $USER->country
+$phonenumber = empty($USER->phone1) === true ? "" : $USER->phone1;
+$admin = get_admin(); // Only 1 MAIN admin can exist at a time.
+$address = [
+    'firstName' => $USER->firstname,
+    'lastName' => $USER->lastname,
+    'address' => $USER->address,
+    'city' => $USER->city,
+    'postalCode' => "",
+    'phone' => $phonenumber, // There are phone1 and phone2 for users. Main phone goes to phone1.
+    'countryCode' => $USER->country
 ];
 
-$customerDetail = [
-	'firstName' => $USER->firstname,
-	'lastName' => $USER->lastname,
-	'email' => $USER->email,
-	'phoneNumber' => $phoneNumber,
-	'billingAddress' => $address,
-	'shippingAddress' => $address
+$customerdetail = [
+    'firstName' => $USER->firstname,
+    'lastName' => $USER->lastname,
+    'email' => $USER->email,
+    'phoneNumber' => $phonenumber,
+    'billingAddress' => $address,
+    'shippingAddress' => $address
 ];
 
-$itemDetails = [
-	[
-		'name' => $productDetails,
-		'price' => $paymentAmount,
-		'quantity' => duitku_mathematical_constants::ONE_PRODUCT
-	]
+$itemdetails = [
+    [
+        'name' => $productdetails,
+        'price' => $paymentamount,
+        'quantity' => duitku_mathematical_constants::ONE_PRODUCT
+    ]
 ];
 
 $params = [
-	'paymentAmount' => $paymentAmount,
-	'merchantOrderId' => $merchantOrderId,
-	'productDetails' => $productDetails,
-	'customerVaName' => $USER->username,
-	'merchantUserInfo' => $USER->username,
-	'email' => $USER->email,
-	'itemDetails' => $itemDetails,
-	'customerDetail' => $customerDetail,
-	'callbackUrl' => $callbackUrl,
-	'returnUrl' => $returnUrl,
-	'expiryPeriod' => (int)$expiryPeriod
+    'paymentAmount' => (int)$paymentamount,
+    'merchantOrderId' => $merchantorderid,
+    'productDetails' => $productdetails,
+    'customerVaName' => $USER->username,
+    'merchantUserInfo' => $USER->username,
+    'email' => $USER->email,
+    'itemDetails' => $itemdetails,
+    'customerDetail' => $customerdetail,
+    'callbackUrl' => $callbackurl,
+    'returnUrl' => $returnurl,
+    'expiryPeriod' => (int)$expiryperiod
 ];
 
-$params_string = json_encode($params);
+$paramsstring = json_encode($params);
 
 
-//Check if the user has not made a transaction before
+// Check if the user has not made a transaction before.
 $params = [
-	'userid' => $userid,
-	'courseid' => $courseid,
-	'instanceid' => $instanceid,
+    'userid' => $userid,
+    'courseid' => $courseid,
+    'instanceid' => $instanceid,
 ];
-$sql_statement = '
-SELECT *
-FROM {enrol_duitku}
-WHERE userid = :userid
-AND courseid = :courseid
-AND instanceid = :instanceid
-ORDER BY {enrol_duitku}.timestamp DESC
-';
+$sql = 'SELECT * FROM {enrol_duitku} WHERE userid = :userid AND courseid = :courseid AND instanceid = :instanceid ORDER BY {enrol_duitku}.timestamp DESC';
 $context = context_course::instance($courseid, MUST_EXIST);
-$existing_data = $DB->get_record_sql($sql_statement, $params, 1);//Will return exactly 1 row. The newest transaction that was saved.
-$duitku_helper = new duitku_helper($merchantCode, $apiKey, $merchantOrderId, $environment);
+$existingdata = $DB->get_record_sql($sql, $params, 1); // Will return exactly 1 row. The newest transaction that was saved.
+$duitkuhelper = new duitku_helper($merchantcode, $apikey, $merchantorderid, $environment);
 
-//Initial data that will be used for $enrol_data
+// Initial data that will be used for $enroldata.
 $admin = get_admin();
-$enrol_data = new stdClass();
-$enrol_data->userid = $USER->id;
-$enrol_data->courseid = $courseid;
-$enrol_data->instanceid = $instanceid;
-$enrol_data->referenceurl = $referenceUrl;
-$enrol_data->timestamp = $timestamp;
-$enrol_data->signature = $signature;
-$enrol_data->merchant_order_id = $merchantOrderId;
-$enrol_data->receiver_id = $admin->id;
-$enrol_data->receiver_email = $admin->email;
-$enrol_data->payment_status = duitku_status_codes::CHECK_STATUS_PENDING;
-$enrol_data->pending_reason = get_string('pending_message', 'enrol_duitku');
-$enrol_data->expiryperiod = $timestamp + ($expiryPeriod * duitku_mathematical_constants::MINUTE_IN_SECONDS * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
-if (empty($existing_data)) {
-	$request_data = $duitku_helper->create_transaction($params_string, $timestamp, $context);
-	$request = json_decode($request_data['request']);
-	$httpCode = $request_data['httpCode'];
-	if($httpCode == 200) {
-		$enrol_data->reference = $request->reference;//Reference only received after successful request transaction
-		$enrol_data->timeupdated = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS); //in milisecond
-		$DB->insert_record('enrol_duitku', $enrol_data);
-		header('location: '. $request->paymentUrl);die;
-	} else {
-		redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));//Redirects back to payment page with error message
-	}
+$enroldata = new stdClass();
+$enroldata->userid = $USER->id;
+$enroldata->courseid = $courseid;
+$enroldata->instanceid = $instanceid;
+$enroldata->referenceurl = $referenceurl;
+$enroldata->timestamp = $currenttimestamp;
+$enroldata->signature = $signature;
+$enroldata->merchant_order_id = $merchantorderid;
+$enroldata->receiver_id = $admin->id;
+$enroldata->receiver_email = $admin->email;
+$enroldata->payment_status = duitku_status_codes::CHECK_STATUS_PENDING;
+$enroldata->pending_reason = get_string('pending_message', 'enrol_duitku');
+$enroldata->expiryperiod = $currenttimestamp + ($expiryperiod * duitku_mathematical_constants::MINUTE_IN_SECONDS * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
+if (empty($existingdata)) {
+    $requestdata = $duitkuhelper->create_transaction($paramsstring, $currenttimestamp, $context);
+    $request = json_decode($requestdata['request']);
+    $httpcode = $requestdata['httpCode'];
+    if ($httpcode == 200) {
+        $enroldata->reference = $request->reference; // Reference only received after successful request transaction.
+        $enroldata->timeupdated = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS); // In milisecond.
+        $DB->insert_record('enrol_duitku', $enroldata);
+        header('location: '. $request->paymentUrl);die;
+    } else {
+        redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));// Redirects back to payment page with error message.
+    }
 }
 
-$prev_merchantOrderId = $existing_data->merchant_order_id;
-$new_duitku_helper = new duitku_helper($merchantCode, $apiKey, $prev_merchantOrderId, $environment);
-$request_data = $new_duitku_helper->check_transaction($context);
-$request = json_decode($request_data['request']);
-$httpCode = $request_data['httpCode'];
+$prevmerchantorderid = $existingdata->merchant_order_id;
+$newduitkuhelper = new duitku_helper($merchantcode, $apikey, $prevmerchantorderid, $environment);
+$requestdata = $newduitkuhelper->check_transaction($context);
+$request = json_decode($requestdata['request']);
+$httpcode = $requestdata['httpCode'];
 
-//If duitku has not saved the transaction but transaction exists in database, or transaction is pending
-if ($httpCode === 400 || $request->statusCode === duitku_status_codes::CHECK_STATUS_PENDING) {
-	//Redirect user to previous checkout link
-	$redirectUrl = $environment === 'sandbox' ? 'https://app-sandbox.duitku.com/' : 'https://app-prod.duitku.com/';
-	$redirectUrl .= 'redirect_checkout?reference=' . $existing_data->reference;
-	header('location: '. $redirectUrl);die;
+// Check for expired transaction just in case.
+if ($existingdata->expiryperiod < $currenttimestamp) {
+    $params = [
+        'paymentAmount' => (int)$paymentamount,
+        'merchantOrderId' => $prevmerchantorderid,
+        'productDetails' => $productdetails,
+        'customerVaName' => $customervaname,
+        'merchantUserInfo' => $USER->username,
+        'email' => $USER->email,
+        'itemDetails' => $itemdetails,
+        'customerDetail' => $customerdetail,
+        'callbackUrl' => $callbackurl,
+        'returnUrl' => $returnurl,
+        'expiryPeriod' => (int)$expiryperiod
+    ];
+    $paramsstring = json_encode($params);
+    $requestdata = $newduitkuhelper->create_transaction($paramsstring, $currenttimestamp, $context);
+    $request = json_decode($requestdata['request']);
+    $httpcode = $requestdata['httpCode'];
+    if ($httpcode == 200) {
+        // Insert to database to be reused later.
+        $enroldata->id = $existingdata->id;
+        $enroldata->reference = $request->reference;
+        $enroldata->timestamp = $currenttimestamp;
+        $enroldata->expiryperiod = $currenttimestamp + ($expiryperiod * duitku_mathematical_constants::MINUTE_IN_SECONDS * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
+        $DB->update_record('enrol_duitku', $enroldata);
+        header('location: '. $request->paymentUrl);die;
+    } else {
+        redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));
+    }
 }
 
-//If transaction was cancelled, create a new transaction but with previous merchant order id and new reference
+// If duitku has not saved the transaction but transaction exists in database, or transaction is pending.
+if ($httpcode === 400 || $request->statusCode === duitku_status_codes::CHECK_STATUS_PENDING) {
+    // Redirect user to previous checkout link.
+    $redirecturl = $environment === 'sandbox' ? 'https://app-sandbox.duitku.com/' : 'https://app-prod.duitku.com/';
+    $redirecturl .= 'redirect_checkout?reference=' . $existingdata->reference;
+    header('location: '. $redirecturl);die;
+}
+
+// If transaction was cancelled, create a new transaction but with previous merchant order id and new reference.
 if ($request->statusCode === duitku_status_codes::CHECK_STATUS_CANCELED) {
-	$request_data = $new_duitku_helper->create_transaction($params_string, $timestamp, $context);
-	$request = json_decode($request_data['request']);
-	$httpCode = $request_data['httpCode'];
-	if($httpCode == 200) {
-		$new_timestamp = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
-		$enrol_data->id = $existing_data->id;//Update the previous data row in database.
-		$enrol_data->reference = $request->reference;//Reference only received after successful request transaction
-		$enrol_data->timestamp = $new_timestamp;
-		$enrol_data->expiryperiod = $new_timestamp + ($expiryPeriod * duitku_mathematical_constants::MINUTE_IN_SECONDS * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
-		$enrol_data->timeupdated = $new_timestamp;
-		$DB->update_record('enrol_duitku', $enrol_data);
+    $params = [
+        'paymentAmount' => (int)$paymentamount,
+        'merchantOrderId' => $prevmerchantorderid,
+        'productDetails' => $productdetails,
+        'customerVaName' => $USER->username,
+        'merchantUserInfo' => $USER->username,
+        'email' => $USER->email,
+        'itemDetails' => $itemdetails,
+        'customerDetail' => $customerdetail,
+        'callbackUrl' => $callbackurl,
+        'returnUrl' => $returnurl,
+        'expiryPeriod' => (int)$expiryperiod
+    ];
+    $paramsstring = json_encode($params);
+    $requestdata = $newduitkuhelper->create_transaction($paramsstring, $currenttimestamp, $context);
+    $request = json_decode($requestdata['request']);
+    $httpcode = $requestdata['httpCode'];
+    if ($httpcode == 200) {
+        $newtimestamp = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
+        $enroldata->id = $existingdata->id;// Update the previous data row in database.
+        $enroldata->reference = $request->reference;// Reference only received after successful request transaction.
+        $enroldata->timestamp = $newtimestamp;
+        $enroldata->expiryperiod = $newtimestamp + ($expiryperiod * duitku_mathematical_constants::MINUTE_IN_SECONDS * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
+        $enroldata->timeupdated = $newtimestamp;
+        $DB->update_record('enrol_duitku', $enroldata);
 
-		header('location: '. $request->paymentUrl);die;
-	} else {
-		redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));//Redirects back to payment page with error message
-	}
+        header('location: '. $request->paymentUrl);die;
+    } else {
+        redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));// Redirects back to payment page with error message.
+    }
 }
 
 if ($request->statusCode === duitku_status_codes::CHECK_STATUS_SUCCESS) {
-	//If previous transaction is successful use a new merchantOrderId
-	$request_data = $duitku_helper->create_transaction($params_string, $timestamp, $context);
-	$request = json_decode($request_data['request']);
-	$httpCode = $request_data['httpCode'];
-	if($httpCode == 200) {
-		$enrol_data->reference = $request->reference;//Reference only received after successful request transaction
-		$enrol_data->timeupdated = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
-		$DB->insert_record('enrol_duitku', $enrol_data);
+    // If previous transaction is successful use a new merchantOrderId.
+    $requestdata = $duitkuhelper->create_transaction($paramsstring, $currenttimestamp, $context);
+    $request = json_decode($requestdata['request']);
+    $httpcode = $requestdata['httpCode'];
+    if ($httpcode == 200) {
+        $enroldata->reference = $request->reference;// Reference only received after successful request transaction.
+        $enroldata->timeupdated = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
+        $DB->insert_record('enrol_duitku', $enroldata);
 
-		header('location: '. $request->paymentUrl);die;
-	} else {
-		redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));//Redirects back to payment page with error message
-	}
+        header('location: '. $request->paymentUrl);die;
+    } else {
+        redirect("{$CFG->wwwroot}/enrol/index.php?id={$courseid}", get_string('call_error', 'enrol_duitku'));// Redirects back to payment page with error message.
+    }
 }

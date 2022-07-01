@@ -15,12 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * 
- * Listens to any callbacks from Duitku
- * If Duitku confirms payment, then setup enrolment for that user
- * 
- * Checks transaction in case user decided to pay during returning from Duitku POP
- * 
+ * Listens to any callbacks from Duitku.
+ *
  * @package   enrol_duitku
  * @copyright 2022 Michael David <mikedh2612@gmail.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -38,48 +34,48 @@ require_once("{$CFG->libdir}/filelib.php");
 
 // Make sure we are enabled in the first place.
 if (!enrol_is_enabled('duitku')) {
-	http_response_code(503);
-	throw new moodle_exception('errdisabled', 'enrol_duitku');
+    http_response_code(503);
+    throw new moodle_exception('errdisabled', 'enrol_duitku');
 }
 
-/// Keep out casual intruders
+// Keep out casual intruders.
 if (empty($_POST) or !empty($_GET)) {
-	http_response_code(400);
-	throw new moodle_exception('invalidrequest', 'core_error');
+    http_response_code(400);
+    throw new moodle_exception('invalidrequest', 'core_error');
 }
 
-//Gets all response parameter from Duitku callback
-$apiKey = get_config('enrol_duitku', 'apikey');
-$merchantCode = isset($_POST['merchantCode']) ? $_POST['merchantCode'] : null;
+// Gets all response parameter from Duitku callback.
+$apikey = get_config('enrol_duitku', 'apikey');
+$merchantcode = isset($_POST['merchantCode']) ? $_POST['merchantCode'] : null;
 $amount = isset($_POST['amount']) ? $_POST['amount'] : null;
-$merchantOrderId = isset($_POST['merchantOrderId']) ? $_POST['merchantOrderId'] : null;
-$productDetail = isset($_POST['productDetail']) ? $_POST['productDetail'] : null;
-$additionalParam = isset($_POST['additionalParam']) ? $_POST['additionalParam'] : null;
-$paymentCode = isset($_POST['paymentCode']) ? $_POST['paymentCode'] : null;
-$resultCode = isset($_POST['resultCode']) ? $_POST['resultCode'] : null;
-$merchantUserId = isset($_POST['merchantUserId']) ? $_POST['merchantUserId'] : null;
+$merchantorderid = isset($_POST['merchantOrderId']) ? $_POST['merchantOrderId'] : null;
+$productdetail = isset($_POST['productDetail']) ? $_POST['productDetail'] : null;
+$additionalparam = isset($_POST['additionalParam']) ? $_POST['additionalParam'] : null;
+$paymentcode = isset($_POST['paymentCode']) ? $_POST['paymentCode'] : null;
+$resultcode = isset($_POST['resultCode']) ? $_POST['resultCode'] : null;
+$merchantuserid = isset($_POST['merchantUserId']) ? $_POST['merchantUserId'] : null;
 $reference = isset($_POST['reference']) ? $_POST['reference'] : null;
 $signature = isset($_POST['signature']) ? $_POST['signature'] : null;
 
-//Making sure that merchant order id is in the correct format
-$custom = explode('-', $merchantOrderId);
+// Making sure that merchant order id is in the correct format.
+$custom = explode('-', $merchantorderid);
 if (empty($custom) || count($custom) < 4) {
-	throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Invalid value of the request param: custom');
+    throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Invalid value of the request param: merchantOrderId');
 }
 
-if (empty($merchantCode) || empty($amount) || empty($merchantOrderId) || empty($signature)) {
-	throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Bad Parameter');
+if (empty($merchantcode) || empty($amount) || empty($merchantorderid) || empty($signature)) {
+    throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Bad Parameter');
 }
 
-$params = $merchantCode . $amount . $merchantOrderId . $apiKey;
-$calcSignature = md5($params);
-if ($signature != $calcSignature) {
-	throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Bad Signature');
+$params = $merchantcode . $amount . $merchantorderid . $apikey;
+$calcsignature = md5($params);
+if ($signature != $calcsignature) {
+    throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Bad Signature');
 }
 
-//Make sure it is not a failed payment
-if (($resultCode !== duitku_status_codes::CHECK_STATUS_SUCCESS)) {
-	throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Payment Failed');
+// Make sure it is not a failed payment.
+if (($resultcode !== duitku_status_codes::CHECK_STATUS_SUCCESS)) {
+    throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Payment Failed');
 }
 
 $data = new stdClass();
@@ -90,87 +86,86 @@ $course = $DB->get_record("course", ["id" => $data->courseid], "*", MUST_EXIST);
 $context = context_course::instance($course->id, MUST_EXIST);
 $PAGE->set_context($context);
 
-//Set enrolment duration (default from Moodle)
-//Only accessible if all required parameters are available
+// Set enrolment duration (default from Moodle).
+// Only accessible if all required parameters are available.
 $data->instanceid = (int)$custom[3];
-$plugin_instance = $DB->get_record("enrol", ["id" => $data->instanceid, "enrol" => "duitku", "status" => 0], "*", MUST_EXIST);
+$plugininstance = $DB->get_record("enrol", ["id" => $data->instanceid, "enrol" => "duitku", "status" => 0], "*", MUST_EXIST);
 $plugin = enrol_get_plugin('duitku');
-if ($plugin_instance->enrolperiod) {
-	$timestart = time();
-	$timeend = $timestart + $plugin_instance->enrolperiod;
-}
-else {
-	$timestart = 0;
-	$timeend = 0;
+if ($plugininstance->enrolperiod) {
+    $timestart = time();
+    $timeend = $timestart + $plugininstance->enrolperiod;
+} else {
+    $timestart = 0;
+    $timeend = 0;
 }
 
-//Double check on transaction before continuing
+// Double check on transaction before continuing.
 $environment = get_config('enrol_duitku', 'environment');
-$duitku_helper = new duitku_helper($merchantCode, $apiKey, $merchantOrderId, $environment);
-$request_data = $duitku_helper->check_transaction($context);
-$response = json_decode($request_data['request']);
-$httpCode = $request_data['httpCode'];
+$duitkuhelper = new duitku_helper($merchantcode, $apikey, $merchantorderid, $environment);
+$requestdata = $duitkuhelper->check_transaction($context);
+$response = json_decode($requestdata['request']);
+$httpode = $requestdata['httpCode'];
 if (($response->statusCode !== duitku_status_codes::CHECK_STATUS_SUCCESS)) {
-	throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Payment Failed');
+    throw new moodle_exception('invalidrequest', 'core_error', '', null, 'Payment Failed');
 }
 
-// Enrol user and update database
-$plugin->enrol_user($plugin_instance, $user->id, $plugin_instance->roleid, $timestart, $timeend);
-//Add to log that callback has been received and student enrolled
-$event_array = [
-	'context' => $context,
-	'relateduserid' => (int)$custom[1],
-	'other' => [
-		'Log Details' => get_string('log_callback', 'enrol_duitku'),
-		'merchantOrderId' => $merchantOrderId,
-		'reference' => $reference,
-		
-	]
+// Enrol user and update database.
+$plugin->enrol_user($plugininstance, $user->id, $plugininstance->roleid, $timestart, $timeend);
+
+// Add to log that callback has been received and student enrolled.
+$eventarray = [
+    'context' => $context,
+    'relateduserid' => (int)$custom[1],
+    'other' => [
+        'Log Details' => get_string('log_callback', 'enrol_duitku'),
+        'merchantOrderId' => $merchantorderid,
+        'reference' => $reference
+    ]
 ];
-$duitku_helper->log_request($event_array);
+$duitkuhelper->log_request($eventarray);
 
 $params = [
-	'userid' => (int)$custom[1],	
-	'courseid' => (int)$custom[2],
-	'instanceid' => (int)$custom[3],
-	'reference' => $reference
+    'userid' => (int)$custom[1],
+    'courseid' => (int)$custom[2],
+    'instanceid' => (int)$custom[3],
+    'reference' => $reference
 ];
-$admin = get_admin(); //Only 1 MAIN admin can exist at a time
-$existing_data = $DB->get_record('enrol_duitku', $params);
-$data->id = $existing_data->id;
-$data->payment_status = $resultCode;
+$admin = get_admin(); // Only 1 MAIN admin can exist at a time.
+$existingdata = $DB->get_record('enrol_duitku', $params);
+$data->id = $existingdata->id;
+$data->payment_status = $resultcode;
 $data->pending_reason = get_string('log_callback', 'enrol_duitku');
 $data->timeupdated = round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS);
 
 $DB->update_record('enrol_duitku', $data);
 
-//Standard mail sending by Moodle to notify users if there are enrolments
-// Pass $view=true to filter hidden caps if the user cannot see them
+// Standard mail sending by Moodle to notify users if there are enrolments.
+// Pass $view=true to filter hidden caps if the user cannot see them.
 if ($users = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC', '', '', '', '', false, true)) {
-	$users = sort_by_roleassignment_authority($users, $context);
-	$teacher = array_shift($users);
+    $users = sort_by_roleassignment_authority($users, $context);
+    $teacher = array_shift($users);
 } else {
-	$teacher = false;
+    $teacher = false;
 }
 
 $mailstudents = $plugin->get_config('mailstudents');
 $mailteachers = $plugin->get_config('mailteachers');
-$mailadmins   = $plugin->get_config('mailadmins');
+$mailadmins = $plugin->get_config('mailadmins');
 $shortname = format_string($course->shortname, true, ['context' => $context]);
 
-//Setup the array that will be replace the variables in the custom email html.
+// Setup the array that will be replace the variables in the custom email html.
 $maildata = [
-	'$courseFullName' => format_string($course->fullname, true, array('context' => $context)),
-	'$amount' => $amount,
-	'$courseShortName' => $shortname,
-	'$studentUsername' => fullname($user),
-	'$courseFullName' => format_string($course->fullname, true, array('context' => $context)),
-	'$teacherName' => empty($teacher) ? core_user::get_support_user() : $teacher->username,
-	'$adminUsername' => $admin->username
+    '$courseFullName' => format_string($course->fullname, true, array('context' => $context)),
+    '$amount' => $amount,
+    '$courseShortName' => $shortname,
+    '$studentUsername' => fullname($user),
+    '$courseFullName' => format_string($course->fullname, true, array('context' => $context)),
+    '$teacherName' => empty($teacher) ? core_user::get_support_user() : $teacher->username,
+    '$adminUsername' => $admin->username
 
 ];
 
-//Setup the array that will be replace the variables in the email template.
+// Setup the array that will be replace the variables in the email template.
 $templatedata = new stdClass();
 $templatedata->courseFullName = format_string($course->fullname, true, array('context' => $context));
 $templatedata->amount = $amount;
@@ -181,44 +176,44 @@ $templatedata->teacherName = empty($teacher) ? core_user::get_support_user() : $
 $templatedata->adminUsername = $admin->username;
 
 if (!empty($mailstudents)) {
-	$userfrom = empty($teacher) ? core_user::get_support_user() : $teacher;
-	$subject = get_string("enrolmentnew", 'enrol', $shortname);
-	$student_email = $plugin->get_config('student_email');
-	$student_email = html_entity_decode($student_email);
-	$fullmessage = empty($student_email) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_students', $templatedata) : strtr($student_email, $maildata);
+    $userfrom = empty($teacher) ? core_user::get_support_user() : $teacher;
+    $subject = get_string("enrolmentnew", 'enrol', $shortname);
+    $studentemail = $plugin->get_config('student_email');
+    $studentemail = html_entity_decode($studentemail);
+    $fullmessage = empty($studentemail) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_students', $templatedata) : strtr($studentemail, $maildata);
 
-	// Send test email.
-	ob_start();
-	$success = email_to_user($user, $userfrom, $subject, $fullmessage);
-	$smtplog = ob_get_contents();
-	ob_end_clean();
+    // Send test email.
+    ob_start();
+    $success = email_to_user($user, $userfrom, $subject, $fullmessage);
+    $smtplog = ob_get_contents();
+    ob_end_clean();
 }
 
 if (!empty($mailteachers) && !empty($teacher)) {
-	$subject = get_string("enrolmentnew", 'enrol', $shortname);
-	$teacher_email = $plugin->get_config('teacher_email');
-	$fullmessage = empty($teacher_email) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_teachers', $templatedata) : strtr($teacher_email, $maildata);
+    $subject = get_string("enrolmentnew", 'enrol', $shortname);
+    $teacheremail = $plugin->get_config('teacher_email');
+    $fullmessage = empty($teacheremail) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_teachers', $templatedata) : strtr($teacheremail, $maildata);
 
-	// Send test email.
-	ob_start();
-	$success = email_to_user($teacher, $user, $subject, $fullmessage, $fullmessagehtml);
-	$smtplog = ob_get_contents();
-	ob_end_clean();
+    // Send test email.
+    ob_start();
+    $success = email_to_user($teacher, $user, $subject, $fullmessage, $fullmessagehtml);
+    $smtplog = ob_get_contents();
+    ob_end_clean();
 }
 
 if (!empty($mailadmins)) {
-	$admin_email = $plugin->get_config('admin_email');
-	$admins = get_admins();
-	foreach ($admins as $admin) {
-		$subject = get_string("enrolmentnew", 'enrol', $shortname);
-		$maildata['$adminUsername'] = $admin->username;
-		$templatedata->adminUsername = $admin->username;
-		$fullmessage = empty($admin_email) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_admins', $templatedata) : strtr($admin_email, $maildata);
-		// Send test email.
-		ob_start();
-		echo($fullmessagehtml . '<br />');
-		$success = email_to_user($admin, $user, $subject, $fullmessage, $fullmessagehtml);
-		$smtplog = ob_get_contents();
-		ob_end_clean();
-	}
+    $adminemail = $plugin->get_config('admin_email');
+    $admins = get_admins();
+    foreach ($admins as $admin) {
+        $subject = get_string("enrolmentnew", 'enrol', $shortname);
+        $maildata['$adminUsername'] = $admin->username;
+        $templatedata->adminUsername = $admin->username;
+        $fullmessage = empty($adminemail) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_admins', $templatedata) : strtr($adminemail, $maildata);
+        // Send test email.
+        ob_start();
+        echo($fullmessagehtml . '<br />');
+        $success = email_to_user($admin, $user, $subject, $fullmessage, $fullmessagehtml);
+        $smtplog = ob_get_contents();
+        ob_end_clean();
+    }
 }
