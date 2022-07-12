@@ -82,6 +82,10 @@ $string['log_callback'] = 'Received Callback from Duitku. Affected student shoul
 $string['environment:production'] = 'Production';
 $string['environment:sandbox'] = 'Sandbox';
 
+$string['return_header'] = 'Pending Transaction';
+$string['return_sub_header'] = 'Course name : {$a->fullname}';
+$string['return_body'] = 'If you have already paid, wait a few moments then check again if you are already enrolled. <br /> We kept your payment <a href="{$a->reference}">here</a> in case you would like to return.';
+
 $string['admin_email'] = 'Email to Admin on Enrolment';
 $string['admin_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';
 

@@ -79,12 +79,13 @@ $PAGE->set_url($destination);
 $a = new stdClass();
 $a->teacher = get_string('defaultcourseteacher');
 $a->fullname = $fullname;
-
-// Output reason why user has not been enrolled yet.
+$a->reference = $referenceurl;
 $response = (object)[
-    'courseName' => $course->fullname,
-    'referenceUrl' => $referenceurl
+    'return_header' => get_string('return_header', 'paygw_duitku'),
+    'return_sub_header' => get_string('return_sub_header', 'paygw_duitku', $a),
+    'return_body' => get_string('return_body', 'paygw_duitku', $a)
 ];
+// Output reason why user has not been enrolled yet.
 echo $OUTPUT->header();
 echo($OUTPUT->render_from_template('enrol_duitku/duitku_return_template', $response));
 notice(get_string('paymentsorry', '', $a), $destination);
