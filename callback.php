@@ -38,24 +38,18 @@ if (!enrol_is_enabled('duitku')) {
     throw new moodle_exception('errdisabled', 'enrol_duitku');
 }
 
-// Keep out casual intruders.
-if (empty($_POST) or !empty($_GET)) {
-    http_response_code(400);
-    throw new moodle_exception('invalidrequest', 'core_error');
-}
-
 // Gets all response parameter from Duitku callback.
 $apikey = get_config('enrol_duitku', 'apikey');
-$merchantcode = isset($_POST['merchantCode']) ? $_POST['merchantCode'] : null;
-$amount = isset($_POST['amount']) ? $_POST['amount'] : null;
-$merchantorderid = isset($_POST['merchantOrderId']) ? $_POST['merchantOrderId'] : null;
-$productdetail = isset($_POST['productDetail']) ? $_POST['productDetail'] : null;
-$additionalparam = isset($_POST['additionalParam']) ? $_POST['additionalParam'] : null;
-$paymentcode = isset($_POST['paymentCode']) ? $_POST['paymentCode'] : null;
-$resultcode = isset($_POST['resultCode']) ? $_POST['resultCode'] : null;
-$merchantuserid = isset($_POST['merchantUserId']) ? $_POST['merchantUserId'] : null;
-$reference = isset($_POST['reference']) ? $_POST['reference'] : null;
-$signature = isset($_POST['signature']) ? $_POST['signature'] : null;
+$merchantcode = required_param('merchantCode', PARAM_TEXT);
+$amount = required_param('amount', PARAM_TEXT);
+$merchantorderid = required_param('merchantOrderId', PARAM_TEXT);
+$productdetail = required_param('productDetail', PARAM_TEXT);
+$additionalparam = required_param('additionalParam', PARAM_TEXT);
+$paymentcode = required_param('paymentCode', PARAM_TEXT);
+$resultcode = required_param('resultCode', PARAM_TEXT);
+$merchantuserid = required_param('merchantUserId', PARAM_TEXT);
+$reference = required_param('reference', PARAM_TEXT);
+$signature = required_param('signature', PARAM_TEXT);
 
 // Making sure that merchant order id is in the correct format.
 $custom = explode('-', $merchantorderid);
