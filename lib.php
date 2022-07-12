@@ -35,6 +35,9 @@ defined('MOODLE_INTERNAL') || die();
 function enrol_duitku_before_footer() {
     global $USER, $DB;
 
+    if (!enrol_is_enabled('duitku')) {
+        return null;
+    }
     $params = [
         'userid' => (int)$USER->id,
         'payment_status' => duitku_status_codes::CHECK_STATUS_PENDING
