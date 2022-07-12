@@ -51,12 +51,15 @@ class payment_expirations extends \core\task\scheduled_task {
     public function execute() {
         global $DB;
         mtrace('Executing Duitku Enrol Plugin Cleaning');
-        $transactions = $DB->get_records('enrol_duitku');
-
+        $params = [
+            'payment_status' => duitku_status_codes::CHECK_STATUS_PENDING
+        ];
+        $sql = 'SELECT * FROM {enrol_duitku} WHERE payment_status = :payment_status';
+        $transactions = $DB->get_records_sql($sql, $params);
         foreach ($transactions as $transaction) {
             $expiryperiod = (int)$transaction->expiryperiod;
-            if (($expiryperiod < round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS)) &&
-            ($transaction->payment_status == duitku_status_codes::CHECK_STATUS_PENDING)) {
+            mtrace(round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS));
+            if ($expiryperiod < round(microtime(true) * duitku_mathematical_constants::SECOND_IN_MILLISECONDS)) {
                 $object = (object)[ // Somehow only this method of object instantiation works. Others creates errors.
                     'id' => $transaction->id,
                     'payment_status' => duitku_status_codes::CHECK_STATUS_CANCELED,
