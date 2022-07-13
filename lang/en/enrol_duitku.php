@@ -88,9 +88,18 @@ $string['return_body'] = 'If you have already paid, wait a few moments then chec
 
 $string['admin_email'] = 'Email to Admin on Enrolment';
 $string['admin_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';
+$string['admin_email_template_header'] = '<h1>New Enrolment in {$a->shortname}</h1><br />';
+$string['admin_email_template_greeting'] = '<p>Hello {$a->adminUsername}!</p><br />';
+$string['admin_email_template_body'] = '<p>{$a->studentUsername} has successfully payed {$a->amount} and enrolled in the {$a->courseFullName} course via Duitku Enrolment Plugin</p>';
 
 $string['teacher_email'] = 'Email to Teacher on Enrolment';
 $string['teacher_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';
+$string['teacher_email_template_header'] = '<h1>New Enrolment in {$a->shortname}</h1><br />';
+$string['teacher_email_template_greeting'] = '<p>Hello {$a->teachername}!</p><br />';
+$string['teacher_email_template_body'] = '<p>{$a->studentUsername} has successfully payed {$a->amount} and enrolled in the {$a->courseFullName} course via Duitku Enrolment Plugin</p>';
 
 $string['student_email'] = 'Email to Student on Enrolment';
 $string['student_email_desc'] = 'Fill with HTML format. Leave blank for default template. <br /> Use "$courseShortName" to display the enrolled course short name, <br /> "$studentUsername" to display enrolled student username, <br /> "$courseFullName" to display the enrolled course full name, <br /> "$amount" to get the amount payed during enrolment, "$adminUsername" to get the admin username, "$teacherName" to get the teacher username. (All without quotation marks).';
+$string['student_email_template_header'] = '<h1>Enrolment Successful</h1>';
+$string['student_email_template_greeting'] = '<p>Hello {$a->studentUsername},</p><br /><p>Welcome to {$a->courseFullName}!</p><br />';
+$string['student_email_template_body'] = '<p>Your payment of {$a->amount} using Duitku has been successful. Enjoy your course!</p><br/>';

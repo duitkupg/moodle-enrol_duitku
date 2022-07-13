@@ -160,18 +160,21 @@ $maildata = [
 ];
 
 // Setup the array that will be replace the variables in the email template.
+$a = new stdClass();
+$a->shortname = $shortname;
+$a->adminUsername = $admin->username;
+$a->studentUsername = fullname($user);
+$a->amount = $amount;
+$a->courseFullName = format_string($course->fullname, true, array('context' => $context));
+$a->teachername = empty($teacher) ? core_user::get_support_user() : $teacher->username;
 $templatedata = new stdClass();
-$templatedata->courseFullName = format_string($course->fullname, true, array('context' => $context));
-$templatedata->amount = $amount;
-$templatedata->courseShortName = $shortname;
-$templatedata->studentUsername = fullname($user);
-$templatedata->courseFullName = format_string($course->fullname, true, array('context' => $context));
-$templatedata->teacherName = empty($teacher) ? core_user::get_support_user() : $teacher->username;
-$templatedata->adminUsername = $admin->username;
 
 if (!empty($mailstudents)) {
     $userfrom = empty($teacher) ? core_user::get_support_user() : $teacher;
     $subject = get_string("enrolmentnew", 'enrol', $shortname);
+    $templatedata->student_email_template_header = format_text(get_string('student_email_template_header', 'enrol_duitku'), FORMAT_MOODLE);
+    $templatedata->student_email_template_greeting = format_text(get_string('student_email_template_greeting', 'enrol_duitku', $a), FORMAT_MOODLE);
+    $templatedata->student_email_template_body = format_text(get_string('student_email_template_body', 'enrol_duitku', $a), FORMAT_MOODLE);
     $studentemail = $plugin->get_config('student_email');
     $studentemail = html_entity_decode($studentemail);
     $fullmessage = empty($studentemail) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_students', $templatedata) : strtr($studentemail, $maildata);
@@ -186,6 +189,9 @@ if (!empty($mailstudents)) {
 if (!empty($mailteachers) && !empty($teacher)) {
     $subject = get_string("enrolmentnew", 'enrol', $shortname);
     $teacheremail = $plugin->get_config('teacher_email');
+    $templatedata->teacher_email_template_header = format_text(get_string('teacher_email_template_header', 'enrol_duitku', $a), FORMAT_MOODLE);
+    $templatedata->teacher_email_template_greeting = format_text(get_string('teacher_email_template_greeting', 'enrol_duitku', $a), FORMAT_MOODLE);
+    $templatedata->teacher_email_template_body = format_text(get_string('teacher_email_template_body', 'enrol_duitku', $a), FORMAT_MOODLE);
     $fullmessage = empty($teacheremail) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_teachers', $templatedata) : strtr($teacheremail, $maildata);
 
     // Send test email.
@@ -201,6 +207,9 @@ if (!empty($mailadmins)) {
     foreach ($admins as $admin) {
         $subject = get_string("enrolmentnew", 'enrol', $shortname);
         $maildata['$adminUsername'] = $admin->username;
+        $templatedata->admin_email_template_header = format_text(get_string('admin_email_template_header', 'enrol_duitku', $a), FORMAT_MOODLE);
+        $templatedata->admin_email_template_greeting = format_text(get_string('admin_email_template_greeting', 'enrol_duitku', $a), FORMAT_MOODLE);
+        $templatedata->admin_email_template_body = format_text(get_string('admin_email_template_body', 'enrol_duitku', $a), FORMAT_MOODLE);
         $templatedata->adminUsername = $admin->username;
         $fullmessage = empty($adminemail) === true ? $OUTPUT->render_from_template('enrol_duitku/duitku_mail_for_admins', $templatedata) : strtr($adminemail, $maildata);
         // Send test email.
