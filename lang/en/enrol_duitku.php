@@ -82,8 +82,8 @@ $string['log_callback'] = 'Received Callback from Duitku. Affected student shoul
 $string['environment:production'] = 'Production';
 $string['environment:sandbox'] = 'Sandbox';
 
-$string['return_header'] = 'Pending Transaction';
-$string['return_sub_header'] = 'Course name : {$a->fullname}';
+$string['return_header'] = '<h2>Pending Transaction</h2>';
+$string['return_sub_header'] = 'Course name : {$a->fullname}<br />';
 $string['return_body'] = 'If you have already paid, wait a few moments then check again if you are already enrolled. <br /> We kept your payment <a href="{$a->reference}">here</a> in case you would like to return.';
 
 $string['admin_email'] = 'Email to Admin on Enrolment';

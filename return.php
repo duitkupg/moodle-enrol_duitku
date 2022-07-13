@@ -81,9 +81,9 @@ $a->teacher = get_string('defaultcourseteacher');
 $a->fullname = $fullname;
 $a->reference = $referenceurl;
 $response = (object)[
-    'return_header' => get_string('return_header', 'paygw_duitku'),
-    'return_sub_header' => get_string('return_sub_header', 'paygw_duitku', $a),
-    'return_body' => get_string('return_body', 'paygw_duitku', $a)
+    'return_header' => format_text(get_string('return_header', 'enrol_duitku'), FORMAT_MOODLE),
+    'return_sub_header' => format_text(get_string('return_sub_header', 'enrol_duitku', $a), FORMAT_MOODLE),
+    'return_body' => format_text(get_string('return_body', 'enrol_duitku', $a), FORMAT_MOODLE),
 ];
 // Output reason why user has not been enrolled yet.
 echo $OUTPUT->header();
