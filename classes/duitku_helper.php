@@ -110,7 +110,6 @@ class duitku_helper {
         ];
         $curl->setopt($curlopt);
 
-
         // Log outgoing Request.
         $eventarray = [
             'context' => $context,
