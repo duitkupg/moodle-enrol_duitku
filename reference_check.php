@@ -59,7 +59,7 @@ $existingdata = $DB->get_record('enrol_duitku', $params);
 // Check for HTTP code first.
 // Earlier PHP versions would throw an error to $response->statusCode if not found. Later version would not.
 // Transaction does not exist. Create a new transaction.
-if (($httpcode === 400) || (empty($existingdata))) {
+if (($httpcode !== 200) || (empty($existingdata))) {
     $redirecturl = "$CFG->wwwroot/course/view.php?id=$courseid"; // Cannot redirect user to call.php since it needs to use the POST method.
     redirect($redirecturl, get_string('payment_not_exist', 'enrol_duitku'), null, \core\output\notification::NOTIFY_ERROR); // Redirects the user to course page with message.
 }

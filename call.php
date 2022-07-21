@@ -146,7 +146,7 @@ $request = json_decode($requestdata['request']);
 $httpcode = $requestdata['httpCode'];
 
 // If duitku has not saved the transaction but transaction exists in database, or transaction is pending.
-if ($httpcode === 400) {
+if ($httpcode !== 200) {
     $params = [
         'paymentAmount' => (int)$paymentamount,
         'merchantOrderId' => $prevmerchantorderid,
